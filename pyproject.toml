@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "comdirect_api_wrapper"
+version = "0.1"
+description = "Python module for comdirect REST api"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "Michael Adams", email = "m@ad4ms.de"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Build Tools",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = ["comdirect", "rest", "api"]
+dependencies = [
+    "pillow",
+    "requests",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "flake8",
+    "black",
+    "pre-commit",
+    "pytest",
+    "build",
+]
+
+[project.urls]
+"Bug Reports" = "https://github.com/mad4ms/comdirect-api-wrapper/issues"
+"Source" = "https://github.com/mad4ms/comdirect-api-wrapper/"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 119
+target-version = ['py312']
+include = '\.pyi?$'
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py3
+minversion = 3.3.0
+isolated_build = true
+
+[testenv]
+deps =
+    flake8
+    pytest
+    build
+commands =
+    python -m build
+    flake8 .
+    #py.test tests {posargs}
+"""

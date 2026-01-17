@@ -1,0 +1,9 @@
+*.pyc
+.tox/
+*.egg-info
+dist/
+bin/creds.py
+build/
+.env
+.venv/
+__pycache__/
