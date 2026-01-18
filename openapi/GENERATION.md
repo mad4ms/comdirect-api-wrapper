@@ -58,6 +58,22 @@ Run the provided helper script:
 
 ---
 
+## Troubleshooting & Patching
+
+If you encounter a `ValidationError` from Pydantic at runtime (e.g. `String should have at most 50 characters`), do **not** edit the generated code.
+
+1.  Identify the failing field (e.g., `Document.name`).
+2.  Edit `scripts/patch_openapi.py`.
+3.  Add a fix to relax or correct the constraint.
+    ```python
+    # Example: Relax maxLength for Document names
+    if "Document" in definitions:
+        definitions["Document"]["properties"]["name"]["maxLength"] = 255
+    ```
+4.  Run `./scripts/bootstrap_client.sh` to regenerate.
+
+---
+
 ## Important Design Notes
 
 ### Spec Patching (Non-Optional)
@@ -105,10 +121,10 @@ Perform the following checks:
 
 ## What Must Never Be Done
 
-- ❌ **Editing files inside `src/openapi_client` manually**
-- ❌ **Runtime monkey-patching of generated models**
-- ❌ **Regenerating without applying the spec patch**
-- ❌ **Mixing Pydantic v1 and v2 generators**
+- **Editing files inside `src/openapi_client` manually**
+- **Runtime monkey-patching of generated models**
+- **Regenerating without applying the spec patch**
+- **Mixing Pydantic v1 and v2 generators**
 
 ---
 
