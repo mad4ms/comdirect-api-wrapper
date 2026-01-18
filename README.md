@@ -1,124 +1,131 @@
 # comdirect-api-wrapper
-![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
-<p align="left">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/e/e9/Comdirect_Logo_2017.png" alt="Comdirect Logo" width="200px">
-</p>
 
-This is a Python implementation of the new [comdirect REST API](https://www.comdirect.de/cms/kontakt-zugaenge-api.html). This API can be used to interact with the German bank comdirect and view your balances, transactions, and depot. The technical specification of the API (in German) is found [here](https://kunde.comdirect.de/cms/media/comdirect_REST_API_Dokumentation.pdf).
+[![PyPI version](https://badge.fury.io/py/comdirect-api-wrapper.svg)](https://badge.fury.io/py/comdirect-api-wrapper)
+[![Build Status](https://github.com/mad4ms/comdirect-api-wrapper/actions/workflows/publish.yml/badge.svg)](https://github.com/mad4ms/comdirect-api-wrapper/actions/workflows/publish.yml)
+![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat&logo=python)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+
+A modern, type-safe Python wrapper for the [comdirect REST API](https://www.comdirect.de/cms/kontakt-zugaenge-api.html).
+
+This library allows you to interact with your Comdirect bank accounts programmatically. It handles the complex OAuth2 authentication flow (including 2FA challenge-response for PhotoTAN, PushTAN, and SMS-TAN), auto-refreshes tokens, and provides a pythonic interface for retrieving balances, transactions, and depot positions.
 
 ## Features
 
-Parts which are implemented and working:
-- OAuth 2-factor login process (Photo-TAN, Push-TAN, SMS-TAN)
-- ACCOUNT (balances & transactions)
-- DEPOT (positions & balances)
-- DOCUMENTS
+-   **Authentication**: Full OAuth2 support with automatic token refresh and session handling.
+-   **2FA Support**: Built-in callbacks for PhotoTAN (App), PushTAN, and SMS-TAN.
+-   **Banking**: Retrieve account lists, balances, and transaction history.
+-   **Brokerage**: Fetch depot overviews and detailed position data.
+-   **Documents**: Download postbox documents (PDFs).
+-   **Type Safe**: Fully typed domain models for great IDE support and autocompletion.
 
 ## Installation
 
-This Python module is currently not on PyPI.
-
 ### Using uv (Recommended)
 
-To add this project to your `uv` managed project:
-
 ```bash
-uv add git+https://github.com/mad4ms/comdirect-api-wrapper.git
+uv add comdirect-api-wrapper
 ```
 
-### Local Development
-
-To install dependencies and set up the environment for development:
+### Using pip
 
 ```bash
-git clone https://github.com/mad4ms/comdirect-api-wrapper.git
-cd comdirect-api-wrapper
-uv sync
+pip install comdirect-api-wrapper
 ```
 
-## Usage
+## Quick Start
 
-See `examples/basic_example.py` for a complete example of how to authenticate and fetch data.
+### 1. Prerequisites
 
-### Configuration
+You need user credentials AND API credentials from Comdirect.
+1.  Enable API access in your Comdirect settings (https://www.comdirect.de/cms/kontakt-zugaenge-api.html).
+2.  Obtain your `client_id` and `client_secret`.
+3. Your smartphone with the Comdirect PhotoTAN app installed (for 2FA).
 
-You need to provide your credentials. The example script uses a `.env` file (you can copy `.env_EXAMPLE` to `.env`).
+### 2. Configuration
 
-```bash
-cp .env_EXAMPLE .env
-# Edit .env and add your USERNAME, PASSWORD, CLIENT_ID, and CLIENT_SECRET
+`python-dotenv` to manage secrets. Create a `.env` file:
+
+```ini
+COMDIRECT_USERNAME=your_username
+COMDIRECT_PASSWORD=your_password
+COMDIRECT_CLIENT_ID=your_client_id
+COMDIRECT_CLIENT_SECRET=your_client_secret
 ```
 
-⚠️⚠️⚠️ **Warning**: Make sure to keep your credentials secure and do not share them publicly. With great power comes great responsibility! ⚠️⚠️⚠️
-
-### Running the Example
-
-You can run the example script using `uv run`:
-
-```bash
-uv run examples/basic_example.py
-```
-
-### Basic Code Example
+### 3. Usage Example
 
 ```python
+import os
+from dotenv import load_dotenv
 from comdirect_api.client import ComdirectClient
-from comdirect_api.utils import default_photo_tan_callback, default_sms_tan_callback, default_push_tan_callback
+from comdirect_api.utils import default_photo_tan_callback, default_push_tan_callback
 
-# Creds dictionary
+load_dotenv()
+
+# 1. Setup Credentials
 credentials = {
-    "username": "YOUR_USERNAME",
-    "password": "YOUR_PASSWORD",
-    "client_id": "YOUR_CLIENT_ID",
-    "client_secret": "YOUR_CLIENT_SECRET",
+    "username": os.getenv("COMDIRECT_USERNAME"),
+    "password": os.getenv("COMDIRECT_PASSWORD"),
+    "client_id": os.getenv("COMDIRECT_CLIENT_ID"),
+    "client_secret": os.getenv("COMDIRECT_CLIENT_SECRET"),
 }
 
-# 2FA Callbacks
+# 2. Setup 2FA Handlers (What happens when the bank asks for a TAN?)
 tan_handlers = {
-    "photo_tan_cb": default_photo_tan_callback,
-    "sms_tan_cb": default_sms_tan_callback,
+    # For PhotoTAN App (Push):
     "push_tan_cb": default_push_tan_callback,
+    # For PhotoTAN Graphic (Scan):
+    "photo_tan_cb": default_photo_tan_callback,
 }
 
-# Initialize and Login
+# 3. Initialize & Login
 client = ComdirectClient(credentials, tan_handlers)
-client.login()
+client.login() # Triggers 2FA interaction if needed
 
-# Usage
-# 1. Fetch Accounts
-accounts = client.list_accounts()
-for account in accounts:
-    print(f"Account: {account.id}, Balance: {account.balance} {account.currency}")
+# 4. Fetch Data
+# --- Accounts ---
+for account in client.list_accounts():
+    print(f"Account: {account.id} | Balance: {account.balance} {account.currency}")
 
-# 2. Fetch Transactions (using iterator helper)
-if accounts:
-    print(f"Transactions for {accounts[0].id}:")
-    for tx in client.iter_all_transactions(accounts[0].id):
-        print(f" - {tx.booking_date}: {tx.amount} {tx.currency} | {tx.purpose}")
+    # Fetch Transactions
+    for tx in client.list_transactions(account.id):
+        print(f"  {tx.booking_date}: {tx.amount} {tx.currency} - {tx.purpose}")
 
-# 3. Fetch Depots & Positions
-depots = client.list_depots()
-for depot in depots:
-    print(f"Depot: {depot.id}")
+# --- Depot ---
+for depot in client.list_depots():
     balance, positions = client.get_depot_positions(depot.id)
-    print(f"Value: {balance.current_value} {balance.current_value_currency}")
+    print(f"Depot Value: {balance.current_value} EUR")
     for pos in positions:
-        print(f" - {pos.quantity}x {pos.wkn}: {pos.current_value} {pos.current_value_currency}")
-
-client.logout()
+        print(f"  {pos.quantity}x {pos.instrument_name} ({pos.wkn})")
 ```
 
-## Usage Policy
+## Advanced Usage
 
-- **Public API**: Application code must only import `ComdirectClient` from `comdirect_api`.
-- **Internal Implementation**: OpenAPI-generated code (`openapi_client`) is an internal implementation detail and should not be imported or used directly. But i can't really force you to not do it.
-- **Data Models**: Use only the domain models provided by `comdirect_api.domain.models`. Generated OpenAPI models are not part of the public API.
+### Pagination
 
-## Development
+For accounts with many transactions, use the iterator which handles pagination automatically:
 
-- This project uses `uv` for dependency management.
-- Source code is in `src/`.
-- **OpenAPI Generation**: See [openapi/GENERATION.md](openapi/GENERATION.md) for instructions on updating the generated client code.
-- Run examples with `uv run examples/basic_example.py`.
-- Run tests (when available) with `uv run pytest`.
+```python
+for tx in client.iter_all_transactions(account_id):
+    # This automatically fetches pages as you iterate
+    process_transaction(tx)
+```
+
+### Document Retrieval
+
+```python
+docs = client.list_documents()
+for doc in docs:
+    print(f"Downloading {doc.name}...")
+    pdf_bytes = client.download_document(doc.id)
+    with open(f"{doc.name}.pdf", "wb") as f:
+        f.write(pdf_bytes)
+```
+
+## Disclaimer
+
+This project is not affiliated with, maintained, or endorsed by comdirect bank AG. Use this software at your own risk. The authors provide no warranty and accept no liability for any financial losses or damages resulting from the use of this software.
+
+---
+
+**License**: MIT

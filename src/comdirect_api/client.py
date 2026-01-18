@@ -185,8 +185,10 @@ class ComdirectClient:
         """
         try:
             # Pass Accept header via _headers argument
-            response = self._messages.messages_v2_get_document(document_id, _headers={"Accept": mime_type})
-            # Response is ApiResponse because type mapping is empty/None in generated code for this endpoint
+            response = self._messages.messages_v2_get_document_with_http_info(
+                document_id, _headers={"Accept": mime_type}
+            )
+            # Response is ApiResponse because we requested http_info
             return response.raw_data
         except ApiException as e:
             raise e

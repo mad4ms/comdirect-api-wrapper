@@ -70,5 +70,17 @@ patch_string(
     example="2024-09-30T12:34:56Z",
 )
 
+
+# ------------------------------------------------------------------
+# Relax validations for fields where API violates spec
+# ------------------------------------------------------------------
+
+if "Document" in definitions:
+    doc_props = definitions["Document"].get("properties", {})
+    if "name" in doc_props:
+        # API returns legal names > 50 chars
+        doc_props["name"]["maxLength"] = 255
+        print("✔ Patched Document.name.maxLength -> 255")
+
 SPEC_PATH.write_text(json.dumps(data, indent=2))
 print("✔ OpenAPI spec patched successfully")
