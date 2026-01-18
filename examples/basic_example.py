@@ -87,6 +87,15 @@ def main():
                     f"  - WKN: {pos.wkn}, Quantity: {pos.quantity} {pos.quantity_unit}, Value: {pos.current_value} {pos.current_value_currency}"  # noqa
                 )
 
+        # Fetch Documents
+        print("\nFetching Documents:")
+        documents = client.list_documents()
+        for doc in documents:
+            print(f"- Document ID: {doc.id}, Name: {doc.name}, Date: {doc.date_creation}")
+            # Download document content (first 1 for demo)
+            content = client.download_document(doc.id, mime_type=doc.mime_type)
+            print(f"  Downloaded {len(content)} bytes.")
+            break  # Only download first document for demo
     except Exception as e:
         print(f"An error occurred during data fetching: {e}")
 

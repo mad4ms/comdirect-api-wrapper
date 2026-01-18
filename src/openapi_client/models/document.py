@@ -33,7 +33,7 @@ class Document(BaseModel):
     document_id: Optional[StrictStr] = Field(
         default=None, description="Unique ID of the document (UUID)", alias="documentId"
     )
-    name: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=50)]] = Field(
+    name: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = Field(
         default=None, description="Name or description of the document."
     )
     date_creation: Optional[StrictStr] = Field(
