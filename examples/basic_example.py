@@ -55,34 +55,37 @@ def main():
     try:
         # Fetch account balances
         print("\nFetching Account Balances:")
-        balances = client.list_account_balances()
-        for balance in balances:
-            print(f"- Account: {balance.account_id}")
-            print(f"  Balance: {balance.balance.value} {balance.balance.currency}")
-            print(f"  Available: {balance.balance_eur.value} {balance.balance_eur.currency}")
+        # balances = client.list_account_balances() # Deprecated
+        accounts = client.list_accounts()
+        for account in accounts:
+            print(f"- Account: {account.id}")
+            print(f"  Balance: {account.balance} {account.currency}")
+            print(f"  Available: {account.available}")
 
         # If there are accounts, fetch transactions for the first one
-        if balances:
-            first_account_id = balances[0].account_id
+        if accounts:
+            first_account_id = accounts[0].id
             print(f"\nFetching transactions for Account {first_account_id}:")
             transactions = client.list_transactions(first_account_id)
             if not transactions:
                 print("No transactions found.")
             for tx in transactions[:5]:  # Show first 5
-                print(f"- {tx.booking_date}: {tx.amount.value} {tx.amount.currency} ({tx.transaction_type.name})")
+                print(f"- {tx.booking_date}: {tx.amount} {tx.currency} ({tx.type})")
 
         # Fetch Depots
         print("\nFetching Depots:")
         depots = client.list_depots()
         for depot in depots:
-            print(f"- Depot ID: {depot.depot_id}, Holder: {depot.holder_name}")
+            print(f"- Depot ID: {depot.id} (Display ID: {depot.display_id})")
 
             # Fetch positions
-            print(f"  Fetching positions for depot {depot.depot_id}...")
-            balance, positions = client.get_depot_positions(depot.depot_id)
-            print(f"  Depot Value: {balance.current_value} EUR")
+            print(f"  Fetching positions for depot {depot.id}...")
+            balance, positions = client.get_depot_positions(depot.id)
+            print(f"  Depot Value: {balance.current_value} {balance.current_value_currency}")
             for pos in positions[:5]:
-                print(f"  - WKN: {pos.wkn}, Quantity: {pos.quantity}, Value: {pos.current_value}")
+                print(
+                    f"  - WKN: {pos.wkn}, Quantity: {pos.quantity} {pos.quantity_unit}, Value: {pos.current_value} {pos.current_value_currency}"  # noqa
+                )
 
     except Exception as e:
         print(f"An error occurred during data fetching: {e}")
