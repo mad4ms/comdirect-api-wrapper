@@ -2,6 +2,7 @@ from decimal import Decimal
 from datetime import date
 from .models import (
     Account,
+    AccountHolder,
     Transaction,
     Depot,
     DepotPosition,
@@ -46,6 +47,16 @@ def map_account(balance):
     )
 
 
+def map_account_holder(info):
+    if not info:
+        return None
+    return AccountHolder(
+        holder_name=info.holder_name,
+        iban=info.iban,
+        bic=info.bic,
+    )
+
+
 def map_transaction(tx, account_id):
     return Transaction(
         account_id=account_id,
@@ -54,6 +65,16 @@ def map_transaction(tx, account_id):
         currency=tx.amount.unit,
         purpose=tx.remittance_info,
         type=tx.transaction_type.key,
+        reference=tx.reference,
+        booking_status=tx.booking_status,
+        valuta_date=_to_date(tx.valuta_date) if tx.valuta_date else None,
+        direct_debit_creditor_id=tx.direct_debit_creditor_id,
+        direct_debit_mandate_id=tx.direct_debit_mandate_id,
+        end_to_end_reference=tx.end_to_end_reference,
+        new_transaction=(tx.new_transaction if tx.new_transaction is not None else False),
+        remitter=map_account_holder(tx.remitter),
+        debtor=map_account_holder(tx.deptor),  # API field is 'deptor', not 'debtor' lol
+        creditor=map_account_holder(tx.creditor),
     )
 
 

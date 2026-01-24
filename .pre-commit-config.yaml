@@ -16,3 +16,17 @@ repos:
     rev: 7.0.0
     hooks:
       - id: flake8
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: tests
+        name: run tests
+        entry: env PYTHONPATH=src uv run python -m unittest discover tests
+        language: system
+        types: [python]
+        pass_filenames: false

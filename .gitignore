@@ -7,3 +7,20 @@ build/
 .env
 .venv/
 __pycache__/
+./tmp/
+*.egg-info/
+tmp/
+# Unit test / coverage reports
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Type checking
+.mypy_cache/
+
+# Linting
+.ruff_cache/
+
+# OS specific
+.DS_Store
+Thumbs.db
