@@ -13,13 +13,37 @@ class Account:
 
 
 @dataclass(frozen=True)
+class AccountHolder:
+    holder_name: Optional[str]
+    iban: Optional[str]
+    bic: Optional[str]
+
+
+@dataclass(frozen=True)
 class Transaction:
     account_id: str
     booking_date: date
     amount: Decimal
     currency: str
     purpose: Optional[str]
-    type: str
+    type: str  # This is transaction_type.key from API
+
+    # Extended fields
+    reference: Optional[str] = None
+    booking_status: Optional[str] = None
+    valuta_date: Optional[date] = None
+
+    # DirectDebit specific
+    direct_debit_creditor_id: Optional[str] = None
+    direct_debit_mandate_id: Optional[str] = None
+    end_to_end_reference: Optional[str] = None
+
+    new_transaction: bool = False
+
+    # Counterparties
+    remitter: Optional[AccountHolder] = None
+    debtor: Optional[AccountHolder] = None
+    creditor: Optional[AccountHolder] = None
 
 
 @dataclass(frozen=True)

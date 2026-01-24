@@ -58,8 +58,8 @@ cp -r "$GEN_DIR/openapi_client" "$DEST_DIR"
 # ------------------------------------------------------------------------------
 # Cleanup
 # ------------------------------------------------------------------------------
-rm -rf "$GEN_DIR"
-rm -f "$SPEC_FILE"
+# rm -rf "$GEN_DIR"
+# rm -f "$SPEC_FILE"
 
 echo "✔ Client successfully updated at:"
 echo "  $DEST_DIR"

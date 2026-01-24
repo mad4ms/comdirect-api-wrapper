@@ -115,32 +115,133 @@ class ComdirectClient:
     #     # Not exposed to avoid leaking generated models.
     #     pass
 
-    def list_transactions(self, account_id: str) -> list[Transaction]:
+    def list_transactions(
+        self,
+        account_id: str,
+        with_account: bool = False,
+        paging_first: int = 0,
+        transaction_state: str = None,
+        transaction_direction: str = None,
+        min_booking_date: str = None,
+        max_booking_date: str = None,
+    ) -> list[Transaction]:
         """
         Returns a list of domain Transaction objects.
         """
-        try:
-            res = self._banking.banking_v1_get_account_transactions(account_id)
-            return [map_transaction(tx, account_id) for tx in res.values]
-        except ApiException as e:
-            raise e
+        return list(
+            self.iter_all_transactions(
+                account_id=account_id,
+                with_account=with_account,
+                paging_first=paging_first,
+                transaction_state=transaction_state,
+                transaction_direction=transaction_direction,
+                min_booking_date=min_booking_date,
+                max_booking_date=max_booking_date,
+            )
+        )
 
-    def iter_all_transactions(self, account_id: str):
+    def iter_all_transactions(
+        self,
+        account_id: str,
+        with_account: bool = False,
+        paging_first: int = 0,
+        transaction_state: str = "BOOKED",
+        transaction_direction: str = None,
+        min_booking_date: str = None,
+        max_booking_date: str = None,
+    ):
         """
         Iterates over all transactions for an account, handling pagination automatically.
-        Note: Only returns 'BOOKED' transactions as the API only supports paging for those.
+        Note: The API only supports paging for 'BOOKED' transactions.
         """
-        offset = 0
+        if transaction_state not in (None, "BOOKED"):
+            res = self._get_account_transactions_page(
+                account_id=account_id,
+                with_account=with_account,
+                paging_first=paging_first,
+                transaction_state=transaction_state,
+                transaction_direction=transaction_direction,
+                min_booking_date=min_booking_date,
+                max_booking_date=max_booking_date,
+            )
+            yield from [map_transaction(tx, account_id) for tx in res.values]
+            return
+
+        offset = paging_first or 0
         while True:
-            res = self._banking.banking_v1_get_account_transactions(
-                account_id,
+            res = self._get_account_transactions_page(
+                account_id=account_id,
+                with_account=with_account,
                 paging_first=offset,
                 transaction_state="BOOKED",
+                transaction_direction=transaction_direction,
+                min_booking_date=min_booking_date,
+                max_booking_date=max_booking_date,
             )
             if not res.values:
                 break
             yield from [map_transaction(tx, account_id) for tx in res.values]
             offset += len(res.values)
+
+    def _get_account_transactions_page(
+        self,
+        account_id: str,
+        with_account: bool,
+        paging_first: int,
+        transaction_state: str,
+        transaction_direction: str,
+        min_booking_date: str,
+        max_booking_date: str,
+    ):
+        with_attr = "account" if with_account else None
+        query_params = []
+        if transaction_state is not None:
+            query_params.append(("transactionState", transaction_state))
+        if transaction_direction is not None:
+            query_params.append(("transactionDirection", transaction_direction))
+        if paging_first is not None:
+            query_params.append(("paging-first", paging_first))
+        if with_attr:
+            query_params.append(("with-attr", with_attr))
+        if min_booking_date:
+            query_params.append(("min-bookingDate", min_booking_date))
+        if max_booking_date:
+            query_params.append(("max-bookingDate", max_booking_date))
+        try:
+            # manual call because the generated banking client omits booking-date params.
+            method, url, header_params, body, post_params = self._api_client.param_serialize(
+                method="GET",
+                resource_path="/banking/v1/accounts/{accountId}/transactions",
+                path_params={"accountId": account_id},
+                query_params=query_params,
+                header_params={
+                    "Accept": self._api_client.select_header_accept(["application/json"]),
+                },
+                body=None,
+                post_params=[],
+                files=None,
+                auth_settings=[],
+                collection_formats={},
+            )
+            response_data = self._api_client.call_api(
+                method,
+                url,
+                header_params=header_params,
+                body=body,
+                post_params=post_params,
+            )
+            response_data.read()
+            return self._api_client.response_deserialize(
+                response_data=response_data,
+                response_types_map={
+                    "200": "ListResourceAccountTransaction",
+                    "404": None,
+                    "422": None,
+                    "500": None,
+                },
+            ).data
+        except ApiException as e:
+            raise e
 
     def list_depots(self) -> list[Depot]:
         """

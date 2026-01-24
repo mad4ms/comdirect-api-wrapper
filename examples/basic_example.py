@@ -66,11 +66,23 @@ def main():
         if accounts:
             first_account_id = accounts[0].id
             print(f"\nFetching transactions for Account {first_account_id}:")
-            transactions = client.list_transactions(first_account_id)
+            transactions = client.list_transactions(
+                first_account_id,
+                min_booking_date="2025-10-01",
+                max_booking_date="2026-02-01",
+            )
             if not transactions:
                 print("No transactions found.")
+            else:
+                print(f"Found {len(transactions)} transactions (first 5 are shown):")
             for tx in transactions[:5]:  # Show first 5
-                print(f"- {tx.booking_date}: {tx.amount} {tx.currency} ({tx.type})")
+                print(f"- {tx.booking_date}: {tx.amount} {tx.currency} ({tx.type}) [Ref: {tx.reference or 'N/A'}]")
+                if tx.remitter and tx.remitter.holder_name:
+                    print(f"  Remitter: {tx.remitter.holder_name}")
+                if tx.creditor and tx.creditor.holder_name:
+                    print(f"  Creditor: {tx.creditor.holder_name}")
+                if tx.purpose:
+                    print(f"  Purpose: {tx.purpose}")
 
         # Fetch Depots
         print("\nFetching Depots:")

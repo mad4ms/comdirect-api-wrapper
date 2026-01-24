@@ -31,7 +31,7 @@ The client is generated from the official Swagger JSON, which requires patching 
 *   **Documentation**: See `GENERATION.md`.
 
 ### Setup & Credentials
-*   **Environment**: Uses `uv` for dependency management.
+*   **Environment**: Uses `uv` for dependency management. NEVER USE PIP!
 *   **Credentials**: `.env` file (see `.env_EXAMPLE`).
     *   `COMDIRECT_USERNAME`, `COMDIRECT_PASSWORD`, `COMDIRECT_CLIENT_ID`, `COMDIRECT_CLIENT_SECRET`.
 
@@ -45,6 +45,8 @@ The client is generated from the official Swagger JSON, which requires patching 
 *   `src/comdirect_api/domain/models.py`: The user-facing public API surface.
 *   `examples/basic_example.py`: The canonical reference for how to use the library.
 *   `scripts/patch_openapi.py`: Critical for fixing API spec violations.
+*   `mcp_server.py`: The Model Context Protocol (MCP) server implementation.
+*   `MCP_USAGE.md`: Documentation for the MCP server.
 
 ## Troubleshooting
 *   **Validation Errors**: If the API returns data that violates restrictions (e.g., `maxLength`), do not relax the Pydantic model manually. Add a patch to `scripts/patch_openapi.py` and regenerate.

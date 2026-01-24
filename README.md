@@ -2,6 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/comdirect-api-wrapper.svg)](https://badge.fury.io/py/comdirect-api-wrapper)
 [![Build Status](https://github.com/mad4ms/comdirect-api-wrapper/actions/workflows/publish.yml/badge.svg)](https://github.com/mad4ms/comdirect-api-wrapper/actions/workflows/publish.yml)
+[![Tests](https://github.com/mad4ms/comdirect-api-wrapper/actions/workflows/tests.yml/badge.svg)](https://github.com/mad4ms/comdirect-api-wrapper/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat&logo=python)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
@@ -91,6 +92,11 @@ for account in client.list_accounts():
     for tx in client.list_transactions(account.id):
         print(f"  {tx.booking_date}: {tx.amount} {tx.currency} - {tx.purpose}")
 
+    # # or
+    # transactions = list(client.iter_all_transactions(account.id))
+    # for tx in transactions:
+    #     print(f"  {tx.booking_date}: {tx.amount} {tx.currency} - {tx.purpose}")
+
 # --- Depot ---
 for depot in client.list_depots():
     balance, positions = client.get_depot_positions(depot.id)
@@ -117,15 +123,61 @@ for tx in client.iter_all_transactions(account_id):
 docs = client.list_documents()
 for doc in docs:
     print(f"Downloading {doc.name}...")
-    pdf_bytes = client.download_document(doc.id)
+    pdf_bytes = client.download_document(doc.id, doc.mime_type)
     with open(f"{doc.name}.pdf", "wb") as f:
         f.write(pdf_bytes)
 ```
 
+## Model Context Protocol (MCP) Server
+
+This library includes a fully functional [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. This allows AI assistants (like Claude Desktop) to connect directly to your Comdirect accounts to fetch balances, search transactions, and analyze your portfolio.
+
+See [MCP_USAGE.md](MCP_USAGE.md) for setup and usage instructions.
+
+### Quick Config for Claude Desktop
+
+```json
+{
+  "mcpServers": {
+    "comdirect": {
+      "command": "python",
+      "args": ["/absolute/path/to/comdirect-api-wrapper/mcp_server.py"],
+      "env": {
+        "COMDIRECT_CLIENT_ID": "...",
+        "COMDIRECT_CLIENT_SECRET": "...",
+        "COMDIRECT_USERNAME": "...",
+        "COMDIRECT_PASSWORD": "..."
+      }
+    }
+  }
+}
+```
+
 ## Disclaimer
 
-This project is not affiliated with, maintained, or endorsed by comdirect bank AG. Use this software at your own risk. The authors provide no warranty and accept no liability for any financial losses or damages resulting from the use of this software.
+This project is not affiliated with, maintained, or endorsed by the comdirect bank. Use this software at your own risk. I provide no warranty and accept no liability for any financial losses or damages resulting from the use of this software.
+
+This project is designed to run locally and does not collect, store, or transmit your banking credentials to any third parties.
+
+Nevertheless, be cautious and **review the code before use, especially when dealing with sensitive financial data**.
 
 ---
 
 **License**: MIT
+
+## Development
+
+### Pre-commit Hooks
+
+This project uses `pre-commit` to ensure code quality and prevent accidental secret commits.
+
+1.  Install pre-commit:
+    ```bash
+    uv pip install pre-commit
+    ```
+2.  Install the git hooks:
+    ```bash
+    pre-commit install
+    ```
+
+Now, checks (formatting, linting, secret scanning) will run automatically before every commit.
