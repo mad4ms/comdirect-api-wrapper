@@ -1,6 +1,6 @@
 # comdirect-api-wrapper
 
-[![PyPI version](https://badge.fury.io/py/comdirect-api-wrapper.svg)](https://badge.fury.io/py/comdirect-api-wrapper)
+[![PyPI version](https://img.shields.io/pypi/v/comdirect-api-wrapper.svg)](https://pypi.org/project/comdirect-api-wrapper/)
 [![Build Status](https://github.com/mad4ms/comdirect-api-wrapper/actions/workflows/publish.yml/badge.svg)](https://github.com/mad4ms/comdirect-api-wrapper/actions/workflows/publish.yml)
 [![Tests](https://github.com/mad4ms/comdirect-api-wrapper/actions/workflows/tests.yml/badge.svg)](https://github.com/mad4ms/comdirect-api-wrapper/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat&logo=python)
@@ -9,6 +9,31 @@
 A modern, type-safe Python wrapper for the [comdirect REST API](https://www.comdirect.de/cms/kontakt-zugaenge-api.html).
 
 This library allows you to interact with your Comdirect bank accounts programmatically. It handles the complex OAuth2 authentication flow (including 2FA challenge-response for PhotoTAN, PushTAN, and SMS-TAN), auto-refreshes tokens, and provides a pythonic interface for retrieving balances, transactions, and depot positions.
+
+Includes an MCP server! Connect your AI so it can analyze your positions and judge your 💎🙌 (or lack thereof). See [MCP_USAGE.md](MCP_USAGE.md) for maximum loss potential.
+
+## Warnung (in Deutsch weil Comdirect)
+
+Leute es geht hier um euer Geld. Nutzt diese Bibliothek nur, wenn ihr den Code versteht und euch den Risiken bewusst seid.
+
+Ich bin auch nicht perfekt, aber übernehme keine Haftung für Schäden, die durch die Nutzung dieser Software entstehen. Falls Euch was auffällt, gern PRs oder Issues.
+
+Die API und damit das Repo hier nutzen aktuell nur lesende Endpunkte, aber Fehler können immer passieren. Comdirect kann die API ändern, Dependencies können im Zweifel auch Mist bauen ([Supply-Chain Attacks](https://docs.github.com/de/code-security/concepts/supply-chain-security/about-supply-chain-security)) und 2FA hilft zwar, ist aber kein Freifahrtschein.
+
+
+
+Bitte:
+- Nutzt das nur lokal auf eurem eigenen Rechner.
+- Teilt eure Zugangsdaten mit niemandem.
+- Packt Secrets in `.env` und committet die Datei nie.
+- Nutzt die [Pre-Commit Hooks](#pre-commit-hooks) um Secrets zu scannen. Gute Zeit bissel Devops-Kram zu lernen.
+- Spielt Updates nicht blind ein (Lockfile/Pinning hilft) und schaut bei Änderungen kurz drüber.
+
+**MCP-Server**: Wenn ihr den Server an einen nicht-lokalen AI-Client hängt, **gehen deine Daten raus**. Je nach Client/Setup können Kontodaten/Transaktionen in Logs/Telemetry landen oder durch Prompt-Injection aus Dokumenten/Verwendungszwecken in komische Richtungen gehen ([MCP Horror Stories: The GitHub Prompt Injection Data Heist](https://www.docker.com/blog/mcp-horror-stories-github-prompt-injection/)). Nutzt MCP nur, wenn ihr der Umgebung wirklich vertraut, und gebt nur die Daten frei, die ihr dafür braucht.
+
+Da der gemeine r/finanzen User eh schon seine Kontoauszüge in ChatGPT kopiert, könnt ihr damit machen, was ihr wollt, **auf eure eigene Verantwortung**!
+
+Idealerweise ohne unnötige personenbezogene Daten. (Hauptsache, ihr lasst 'nen Stern da.)
 
 ## Features
 
