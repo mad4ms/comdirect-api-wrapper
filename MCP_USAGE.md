@@ -10,11 +10,11 @@ This MCP server exposes your Comdirect accounts, transactions, depots, and docum
 
 ## Installation
 
-1.  Ensure you have the project installed (or are in the root with dependencies):
-    ```bash
-    uv pip install .  # Installs comdirect_api_wrapper
-    uv pip install mcp
-    ```
+1. Ensure you have the project installed (or are in the root with dependencies):
+   ```bash
+   uv pip install .  # Installs comdirect_api_wrapper
+   uv pip install mcp
+   ```
     *Note: The `mcp` package is required for the server implementation.*
 
 ## Configuration
@@ -83,7 +83,9 @@ You can use this as a template for creating your own custom agents.
 
 ## Security Note
 
-This server runs locally and accesses your real bank account.
 - **Never share your credentials.**
 - **Review MCP configuration carefully.**
-- The server performs read-only operations mostly, but `login` triggers 2FA which sends push notifications/SMS.
+
+The server currently uses mostly read-only calls, but `login` triggers 2FA (Push/SMS/PhotoTAN).
+
+And because this is MCP + AI: treat this as if "data is leaving the building". Depending on your client/setup, account data, transactions, or document contents might end up in logs/telemetry or be handled unexpectedly due to prompt injection from payment references/PDFs. Only use this if you truly trust the environment.
